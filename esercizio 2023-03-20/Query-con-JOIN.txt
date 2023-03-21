@@ -5,7 +5,7 @@
         `students`.`surname` AS "cognome", 
         `degrees`.`name` AS "corso di laurea frequentato"
     FROM `students`
-    JOIN `degrees` ON `students`.`degree_id` = `students`.`id`
+    JOIN `degrees` ON `students`.`degree_id` = `degrees`.`id`
     WHERE `degrees`.`name` = "Corso di Laurea in Economia";
 
 
@@ -20,32 +20,76 @@
 
 
 
-NOPE NOPE          3. Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
---> nella tab courses:
-BOH 
+3. Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
+--> nella tab course_teacher:
+    SELECT `courses`.* 
+    FROM `course_teacher` 
+    JOIN `courses` ON `courses`.`id` = `course_teacher`.`course_id`
+    JOIN `teachers` ON `teachers`.`id` = `course_teacher`.`teacher_id`
+    WHERE `teachers`.`name` = "Fulvio" 
+    AND `teachers`.`surname` = "Amato"; 
 
-SELECT courses.name AS "nome corso", teachers.name AS "nome prof", teacher.surname AS "cognome prof"
-FROM `courses`
-JOIN course_teacher ON teachers.id = course_teacher.teacher_id
-JOIN teachers ON teachers.id = course_teacher.course_id
 
 
-
-NOPE NOPE          4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e nome
---> nella tab 
-BOH
+ 4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e nome
+--> nella tab students:
+    SELECT 
+        `students`.`id` AS "id studente",
+        `students`.`name` AS "nome studente",
+        `students`.`surname` AS "cognome studente",
+        `degrees`.`id` AS "id corso di laurea",
+        `degrees`.`name` AS "nome corso di laurea",
+        `departments`.`id` AS "id dipartimento",
+        `departments`.`name` AS "nome dipartimento"
+    FROM `students`
+    JOIN `degrees` ON `degrees`.`id` = `students`.`degree_id`
+    JOIN `departments` ON `degrees`.`department_id` = `departments`.`id`
+    ORDER BY `students`.`surname`, `students`.`name`, `students`.`id`
 
 
 
 5. Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
---> nella tab 
+--> nella tab degrees:
+    SELECT
+        `degrees`.`name` AS "nome corso di laurea",
+        `courses`.`name` AS "nome corso",
+        `teachers`.`name` AS "nome insegnante",
+        `teachers`.`surname` AS "cognome insegnante"
+    FROM `degrees`
+    JOIN `courses` ON `degrees`.`id` = `courses`.`degree_id`
+    JOIN `course_teacher` ON `courses`.`id` = `course_teacher`.`course_id`
+    JOIN `teachers`ON `teachers`.`id` = `course_teacher`.`teacher_id`
 
 
 
 6. Selezionare tutti i docenti che insegnano nel Dipartimento di Matematica (54)
---> nella tab 
+--> nella tab degrees:
+    SELECT DISTINCT `teachers`.`id` AS "id insegnante", 
+        `teachers`.`name` AS "nome insegnante", 
+        `teachers`.`surname` AS "cognome insegnante", 
+        `departments`.`name` AS "dipartimento"
+    FROM `degrees`
+    JOIN `courses` ON `degrees`.`id` = `courses`.`degree_id`
+    JOIN `course_teacher` ON `courses`.`id` = `course_teacher`.`course_id`
+    JOIN `teachers` ON `teachers`.`id` = `course_teacher`.`teacher_id`
+    JOIN `departments`ON `departments`.`id` = `degrees`.`department_id`
+    WHERE `departments`.`name` = "Dipartimento di Matematica"
+NB: serve -DISTINCT `teachers`.`id` AS "id insegnante"- nel select se no mi da più volte alcuni teachers!
 
 
 
 7. BONUS: Selezionare per ogni studente quanti tentativi d’esame ha sostenuto per superare ciascuno dei suoi esami
---> nella tab 
+--> nella tab exam_student:
+    SELECT 
+        `exam_student`.`student_id` AS "id studente",
+        `students`.`name` AS "nome studente", 
+        `students`.`surname` AS "cognome studente", 
+        `courses`.`name` AS "nome corso", 
+        COUNT(*) AS "tentativi di esame", 
+        MAX(`exam_student`.`vote`) AS "voto massimo ottenuto"
+    FROM `exam_student`
+    JOIN `exams` ON `exam_student`.`exam_id` = `exams`.`id`
+    JOIN `courses` ON `exams`.`course_id` = `courses`.`id`
+    JOIN `students` ON `exam_student`.`student_id` = `students`.`id`
+    GROUP BY `exam_student`.`student_id`, `courses`.`id`
+    HAVING MAX(`exam_student`.`vote`) > 18

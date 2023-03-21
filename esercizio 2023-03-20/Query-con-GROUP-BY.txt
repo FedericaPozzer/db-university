@@ -17,6 +17,7 @@
     SELECT AVG(`vote`) AS "media voto", `exam_id` AS "id appello d'esame"  
     FROM `exam_student`
     GROUP BY `exam_id`
+    NB: ROUND(AVG(`vote`)) arrotonda il voto!
 
 
 4. Contare quanti corsi di laurea ci sono per ogni dipartimento
